@@ -26,7 +26,7 @@ namespace CakeAPI.Controllers
 
         [HttpGet]
         //Get Collection of Cakes
-        public ActionResult GetCakes()
+        public ActionResult<CakeDto> GetCakes()
         {
             var cakes = cake.GetCakes;
             if (cakes == null)
@@ -35,13 +35,13 @@ namespace CakeAPI.Controllers
             }
             return Ok(mapper.Map<IEnumerable<CakeDto>>(cakes));
         }
-        [HttpGet("{id}")]
-        public async Task<ActionResult<CakeDto>> GetCake(string cakes)
+        [HttpGet("{sweet}")]
+        public async Task<ActionResult<CakeDto>> GetCake(string sweet)
         {
-            if (cakes == null) {
+            if (sweet == null) {
                 return NotFound();
             }
-            var newcake = await cake.GetCake(cakes);
+            var newcake = await cake.GetCake(sweet);
             return Ok(mapper.Map<CakeDto>(newcake));
         }
 
