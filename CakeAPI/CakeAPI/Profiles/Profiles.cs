@@ -1,11 +1,6 @@
 ﻿using AutoMapper;
 using CakeAPI.Dto;
 using CakeAPI.Model;
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CakeAPI.Profiles
 {
@@ -13,15 +8,16 @@ namespace CakeAPI.Profiles
     {
         public Profiles()
         {
-            CreateMap<CakeDto, CakeModel>()
+            CreateMap<CakeModel, CakeDto>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
             .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
             .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description));
 
-            CreateMap<CakeModel, CakeDto>()
+            CreateMap<CakeCreateDTO,CakeModel >()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
             .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description));
+            
         }
     }
 }
