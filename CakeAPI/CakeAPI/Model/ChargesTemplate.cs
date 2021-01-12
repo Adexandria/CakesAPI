@@ -6,13 +6,15 @@ using System.Threading.Tasks;
 
 namespace CakeAPI.Model
 {
-    public class OrderTemplate
+    public class ChargesTemplate
     {
         [JsonProperty("email")]
         public string Email { get; set; }
         [JsonProperty("amount")]
         public string Amount { get; set; }
-        [JsonProperty("currency")]
-        public string Currency { get; set; }
+        [JsonProperty("bank")]
+        public Bank Bank { get; set; }
+        [JsonProperty("birthday")]
+        public DateTime Birthday { get; set; }
     }
 }
