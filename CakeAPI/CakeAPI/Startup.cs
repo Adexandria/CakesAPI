@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using CakeAPI.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -36,6 +37,7 @@ namespace CakeAPI
                 opt.UseSqlServer(Configuration.GetConnectionString("Cakes"));
             });
             services.AddScoped<ICake, CakeRepos>();
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
          
     }
        
