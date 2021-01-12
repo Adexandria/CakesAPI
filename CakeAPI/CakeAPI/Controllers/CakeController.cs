@@ -60,7 +60,7 @@ namespace CakeAPI.Controllers
         [HttpDelete("{id}")]
         public async  Task<ActionResult> Delete(string id) 
         {
-            var cakes = await cake.Delete(id);
+            await cake.Delete(id);
             return NoContent();
         
         }

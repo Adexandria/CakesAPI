@@ -35,44 +35,74 @@ namespace CakeAPI.Controllers
         {
             if(name == null) 
             {
-                return NotFound();
+                return NotFound("Enter name of cake");
             }
             var getcake = await cake.GetCake(name);
             model.Amount = getcake.Price;
-             var reference =   await InitializeTransaction(model);
+            var reference =   await InitializeTransaction(model);
             var newcontent =await Verify(reference);
             Reciept reciept = JsonConvert.DeserializeObject<Reciept>(newcontent);
-            return Ok(reciept);
+            if(reciept != null) 
+            {
+                return Ok(reciept);
+
+            }
+            return BadRequest("Try again");
         }
-        private async Task<string> Verify(string reference) 
+
+        private async Task<string> Verify(string reference)
+        {
+            try
+            {
+                var client = GetClient();
+                var url = urlBase + "/verify/" + reference;
+                HttpResponseMessage httpResponse;
+                httpResponse = await client.GetAsync(url);
+                return await GetContent(httpResponse);
+            }
+            catch (Exception e)
+            {
+
+                return e.Message;
+            }
+            
+
+        }
+       
+        private async Task<string> InitializeTransaction(OrderTemplate model) 
+        {
+            try {
+                var client = GetClient();
+                var url = urlBase + "/initialize";
+                HttpResponseMessage httpResponse;
+                var json = JsonConvert.SerializeObject(model);
+                using (StringContent content = new StringContent(json))
+                {
+                    content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                    httpResponse = await client.PostAsync(url, content);
+
+                }
+                var newContent = await GetContent(httpResponse);
+                Verification verify = JsonConvert.DeserializeObject<Verification>(newContent);
+                return verify.Data.Reference;
+            } 
+            catch(Exception e)
+            {
+                return e.Message;
+            }
+           
+        }
+        private HttpClient GetClient() 
         {
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", key);
-            var url = urlBase + "/verify/" + reference;
-            HttpResponseMessage httpResponse;
-            httpResponse = await client.GetAsync(url);
+            return client;
+        }
+        private async Task<string> GetContent(HttpResponseMessage httpResponse)
+        {
             string contentString = await httpResponse.Content.ReadAsStringAsync();
             var newContent = JToken.Parse(contentString).ToString();
             return newContent;
-
-        }
-        private async Task<string> InitializeTransaction(OrderTemplate model) 
-        {
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("Authorization", key);
-            var url = urlBase + "/initialize";
-            HttpResponseMessage httpResponse;
-            var json = JsonConvert.SerializeObject(model);
-            using (StringContent content = new StringContent(json))
-            {
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                httpResponse = await client.PostAsync(url, content);
-
-            }
-            string contentString = await httpResponse.Content.ReadAsStringAsync();
-            var newContent = JToken.Parse(contentString).ToString();
-            Verification verify = JsonConvert.DeserializeObject<Verification>(newContent);
-            return verify.Data.Reference;
         }
     }
 }

@@ -38,44 +38,84 @@ namespace CakeAPI.Controllers
             charges.Amount = getcake.Price;
             var newcharge = await InitializeCharge(charges);
             verification = JsonConvert.DeserializeObject<Verification>(newcharge);
-            return Ok(verification.Data.Reference);
+            if(verification != null) 
+            {
+                return Ok(verification.Data.Reference);
+            }
+            return BadRequest("Try again");
         }
+
         [HttpPost("{reference}")]
         public async Task<ActionResult<string>> SubmitPin(PinTemplate pin)
         {
             var receipt = await Submit_Pin(pin);
             return receipt;
         }
-        [HttpPost("pay")]
+
+        [HttpPost("{reference}/pay")]
         public async Task<ActionResult<Reciept>> SubmitOTP(OTPTemplate otp)
         {
             var receipt = await Submit(otp);
             Reciept reciepts = JsonConvert.DeserializeObject<Reciept>(receipt);
             return reciepts;
         }
+
+
         private async Task<string> Submit_Pin(PinTemplate pin)
         {
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Add("Authorization", key);
-            var url = urlBase + "/submit_pin";
-            HttpResponseMessage httpResponse;
-            var json = JsonConvert.SerializeObject(pin);
-            using (StringContent content = new StringContent(json))
+            try
             {
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                httpResponse = await client.PostAsync(url, content);
+                HttpClient client = new HttpClient();
+                client.DefaultRequestHeaders.Add("Authorization", key);
+                var url = urlBase + "/submit_pin";
+                HttpResponseMessage httpResponse = new HttpResponseMessage();
+                var json = JsonConvert.SerializeObject(pin);
+                return await GetContent(httpResponse, json, url, client);
             }
-            string contentString = await httpResponse.Content.ReadAsStringAsync();
-            var newContent = JToken.Parse(contentString).ToString();
-            return newContent;
+            catch (Exception e)
+            { 
+                return e.Message;
+            }
+            
         }
+
         private async Task<string> Submit(OTPTemplate otp) 
         {
+           try
+           { 
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", key);
             var url = urlBase + "/submit_otp";
-            HttpResponseMessage httpResponse;
+            HttpResponseMessage httpResponse = new HttpResponseMessage();
             var json = JsonConvert.SerializeObject(otp);
+            return await GetContent(httpResponse, json, url, client);
+           }
+           catch (Exception e)
+           {
+
+                return e.Message;
+           }
+        }
+
+        private async Task<string> InitializeCharge(ChargesTemplate charges)
+        {
+            try
+            {
+                var client = GetClient();
+                var url = urlBase;
+                HttpResponseMessage httpResponse = new HttpResponseMessage();
+                var json = JsonConvert.SerializeObject(charges);
+                return await GetContent(httpResponse, json, url, client);
+            }
+            catch (Exception e)
+            {
+
+                return e.Message;
+            }
+        }
+
+        private async Task<string> GetContent(HttpResponseMessage httpResponse,string json,string url,HttpClient client)
+        { 
             using (StringContent content = new StringContent(json))
             {
                 content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -85,22 +125,12 @@ namespace CakeAPI.Controllers
             var newContent = JToken.Parse(contentString).ToString();
             return newContent;
         }
-        private async Task<string> InitializeCharge(ChargesTemplate charges) 
+
+        private HttpClient GetClient()
         {
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", key);
-            var url = urlBase;
-            HttpResponseMessage httpResponse;
-            var json = JsonConvert.SerializeObject(charges);
-            using(StringContent content = new StringContent(json)) 
-            {
-                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                httpResponse = await client.PostAsync(url, content);
-            }
-            string contentString = await httpResponse.Content.ReadAsStringAsync();
-            var newContent = JToken.Parse(contentString).ToString();
-            return newContent;
-
+            return client;
         }
     }
 }
